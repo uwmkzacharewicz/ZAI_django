@@ -87,32 +87,6 @@ class BorrowViewSet(viewsets.ModelViewSet):
             return BorrowCreateUpdateSerializer
         return BorrowSerializer
 
-def home_view1(request):
-    html = """
-    <html>
-    <head>
-        <title>Strona Główna</title>
-        <style>
-            body { font-family: Arial; margin: 40px; background: #f8f8f8; }
-            h1 { color: #333; }
-            a { display: block; padding: 10px; background: #4CAF50; color: white; text-decoration: none; margin: 10px 0; width: fit-content; border-radius: 4px; }
-            a:hover { background: #45a049; }
-        </style>
-    </head>
-    <body>
-        <h1>📚 Witaj w aplikacji biblioteki!</h1>
-        <a href="/admin/">Panel administracyjny</a>
-        <a href="/api/">REST API</a>
-        <a href="/graphql/">GraphQL Playground</a>
-        <a href="/swagger/">Swagger UI</a>
-        <a href="/redoc/">ReDoc Dokumentacja</a>
-    </body>
-    </html>
-    """
-    return HttpResponse(html)
-
-from django.http import HttpResponse
-
 def home_view(request):
     html = """
     <html>
@@ -138,7 +112,7 @@ def home_view(request):
         </style>
     </head>
     <body>
-        <h1>📚 Strona startowa aplikacji</h1>
+        <h1>Strona startowa aplikacji</h1>
 
         <div class="link"><a href="/admin/">Panel administracyjny</a></div>
         <div class="link"><a href="/api/">REST API</a></div>
@@ -147,7 +121,7 @@ def home_view(request):
         <div class="link"><a href="/redoc/">ReDoc</a></div>
 
         <hr/>
-        <h2>🔐 Uzyskaj token JWT</h2>
+        <h2>Uzyskaj token JWT</h2>
         <form id="login-form">
             <input type="text" id="username" placeholder="Nazwa użytkownika" required /><br/>
             <input type="password" id="password" placeholder="Hasło" required /><br/>
@@ -176,13 +150,13 @@ def home_view(request):
 
                 if (response.ok) {
                     document.getElementById('result').innerHTML = `
-                        <p>✅ Token uzyskany:</p>
+                        <p>Token uzyskany:</p>
                         <div class="token-box"><strong>Access:</strong><br/>${data.access}</div>
                         <div class="token-box"><strong>Refresh:</strong><br/>${data.refresh}</div>
                     `;
                 } else {
                     document.getElementById('result').innerHTML = `
-                        <p style="color: red;">❌ Błąd logowania: ${data.detail || 'Nieprawidłowe dane'}</p>
+                        <p style="color: red;">Błąd logowania: ${data.detail || 'Nieprawidłowe dane'}</p>
                     `;
                 }
             });
