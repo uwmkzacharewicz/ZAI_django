@@ -6,6 +6,7 @@ from graphene_django.views import GraphQLView
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 from rest_framework import permissions
+from library.views import home_view
 
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
@@ -26,6 +27,7 @@ schema_view = get_schema_view(
 
 
 urlpatterns = [
+    path('', home_view, name='home'),
     path('admin/', admin.site.urls),
     path('api/', include('library.urls')),
     path('graphql/', GraphQLView.as_view(graphiql=True)),
