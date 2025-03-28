@@ -148,3 +148,5 @@ class Borrow(models.Model):
 
     def __str__(self):
         return f"{self.patron.full_name} borrows {self.book.title}"
+
+

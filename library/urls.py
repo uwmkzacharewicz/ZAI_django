@@ -1,8 +1,13 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views import (
-    PublisherViewSet, CategoryViewSet, AuthorViewSet, BookViewSet,
-    BookDetailsViewSet, PatronViewSet, BorrowViewSet
+    PublisherViewSet,
+    CategoryViewSet,
+    AuthorViewSet,
+    BookViewSet,
+    BookDetailsViewSet,
+    PatronViewSet,
+    BorrowViewSet
 )
 
 router = DefaultRouter()

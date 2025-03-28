@@ -25,9 +25,10 @@ class BookSerializer(serializers.ModelSerializer):
     category_id = serializers.PrimaryKeyRelatedField(queryset=Category.objects.all(), source='category', write_only=True)
     publisher = PublisherSerializer(read_only=True)
     publisher_id = serializers.PrimaryKeyRelatedField(queryset=Publisher.objects.all(), source='publisher', write_only=True)
+    borrow_count = serializers.IntegerField(read_only=True)
     class Meta:
         model = Book
-        fields = ['id', 'title', 'publication_year', 'authors', 'author_ids', 'category', 'category_id', 'publisher', 'publisher_id']
+        fields = ['id', 'title', 'publication_year', 'authors', 'author_ids', 'category', 'category_id', 'publisher', 'publisher_id', 'borrow_count']
 
 class BookDetailsSerializer(serializers.ModelSerializer):
     book = BookSerializer(read_only=True)
