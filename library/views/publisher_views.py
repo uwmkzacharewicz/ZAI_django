@@ -1,5 +1,6 @@
 from rest_framework import viewsets, status
 from rest_framework.response import Response
+from django.db.models import Count
 from rest_framework.decorators import action
 from rest_framework.renderers import JSONRenderer
 from ..models import Publisher, Book
@@ -37,3 +38,22 @@ class PublisherViewSet(viewsets.ModelViewSet):
         books = Book.objects.filter(publisher=publisher)
         serializer = BookSerializer(books, many=True)
         return Response(serializer.data)
+
+    # Ile książek ma wydawca oraz ile razy te książki były wypożyczone
+    @action(detail=True, methods=['get'], url_path='stats')
+    def publisher_stats(self, request, pk=None):
+        publisher = self.get_object()
+
+        books_count = publisher.books.count()       # policzenie książek
+
+        # liczenie wypożyczeń
+        total_borrows = (
+            publisher.books
+            .aggregate(total=Count('borrows'))['total']     # borrows -> related_name w book -> Borrow
+        )
+
+        return Response({
+            "publisher": publisher.name,
+            "books_count": books_count,
+            "total_borrows": total_borrows
+        })

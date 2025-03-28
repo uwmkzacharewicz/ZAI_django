@@ -82,6 +82,95 @@ class BorrowType(DjangoObjectType):
         interfaces = (graphene.relay.Node,)
 
 
+
+# Mutacje
+class CreateBook(graphene.Mutation):
+    book = graphene.Field(BookType)
+
+    class Arguments:
+        title = graphene.String()
+        publisher_id = graphene.ID()
+        publication_year = graphene.Int()
+        category_id = graphene.ID()
+        authors_ids = graphene.List(graphene.ID)
+
+    def mutate(self, info, title, publisher_id, publication_year, category_id, authors_ids):
+        publisher = Publisher.objects.get(pk=publisher_id)
+        category = Category.objects.get(pk=category_id)
+        authors = Author.objects.filter(pk__in=authors_ids)
+
+        book = Book.objects.create(
+            title=title,
+            publisher=publisher,
+            publication_year=publication_year,
+            category=category)
+
+        book.authors.set(authors)
+        return CreateBook(book=book)
+
+class UpdateBook(graphene.Mutation):
+    book = graphene.Field(BookType)
+
+    class Arguments:
+        book_id = graphene.Int(required=True)
+        title = graphene.String(required=False)
+        publication_year = graphene.Int(required=False)
+        publisher_id = graphene.Int(required=False)
+        category_id = graphene.Int(required=False)
+        author_ids = graphene.List(graphene.Int, required=False)
+
+    def mutate(self, info, book_id, title=None, publication_year=None,
+               publisher_id=None, category_id=None, author_ids=None):
+        try:
+            book = Book.objects.get(pk=book_id)
+        except Book.DoesNotExist:
+            raise Exception("Nieznaleziono książki.")
+
+        if title is not None:
+            book.title = title
+        if publication_year is not None:
+            book.publication_year = publication_year
+        if publisher_id is not None:
+            publisher = Publisher.objects.get(pk=publisher_id)
+            book.publisher = publisher
+        if category_id is not None:
+            book.category = Category.objects.get(pk=category_id)
+
+        book.save()
+
+        # ManyToMany
+        if author_ids is not None:
+            authors = Author.objects.filter(pk__in=author_ids)
+            book.authors.set(authors)
+
+        return UpdateBook(book=book)
+
+class DeleteBook(graphene.Mutation):
+    success = graphene.Boolean()
+
+    class Arguments:
+        book_id = graphene.Int(required=True)
+
+    def mutate(self, info, book_id):
+        try:
+            book = Book.objects.get(pk=book_id)
+        except Book.DoesNotExist:
+            raise Exception("Book not found.")
+        book.delete()
+        return DeleteBook(success=True)
+
+# agregacje
+class BookCount(graphene.ObjectType):
+    count = graphene.Int()
+
+    def resolve_count(self, info):
+        return Book.objects.count()
+
+class CategoryStatsType(graphene.ObjectType):
+    id = graphene.ID()
+    name = graphene.String()
+    book_count = graphene.Int()
+
 class Query(graphene.ObjectType):
     all_books = DjangoFilterConnectionField(BookType)
     all_authors = DjangoFilterConnectionField(AuthorType)
@@ -98,5 +187,47 @@ class Query(graphene.ObjectType):
     patron = graphene.relay.Node.Field(PatronType)
     borrow = graphene.relay.Node.Field(BorrowType)
 
+    # pobranie liczby książek
+    book_count = graphene.Field(BookCount)
+    # pobranie statystyk kategorii
+    category_stats = graphene.List(CategoryStatsType)
 
-schema = graphene.Schema(query=Query)
+    def resolve_book_count(self, info):
+        return BookCount()
+
+    def resolve_category_stats(self, info):
+        from library.models import Category
+        from django.db.models import Count
+
+        # słownik z danymi
+        qs = (
+            Category.objects
+            .annotate(book_count=Count('books'))
+            .values('id', 'name', 'book_count')
+        )
+
+        # zamieniamy słownik na listę obiektów
+        stats_list = []
+        for row in qs:
+            stats_list.append(
+                CategoryStatsType(
+                    id=row['id'],
+                    name=row['name'],
+                    book_count=row['book_count']
+                )
+            )
+        return stats_list
+
+
+
+class Mutation(graphene.ObjectType):
+    create_book = CreateBook.Field()
+    update_book = UpdateBook.Field()
+    delete_book = DeleteBook.Field()
+
+
+schema = graphene.Schema(query=Query, mutation=Mutation)
+
+
+
+

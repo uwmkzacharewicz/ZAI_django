@@ -73,3 +73,22 @@ class BookViewSet(viewsets.ModelViewSet):
             for author in authors
         ]
         return Response(data)
+
+    @action(detail=False, methods=['get'], url_path='most-borrowed')
+    def most_borrowed(self, request):
+        books = self.get_queryset().order_by('-borrow_count')[:3]
+        serializer = self.get_serializer(books, many=True)
+        return Response(serializer.data)
+
+    # zwróci listę kategorii i liczbę książek, które do nich należą
+    @action(detail=False, methods=['get'], url_path='category-stats')
+    def category_stats(self, request):
+
+        from ..models import Category
+
+        stats = (
+            Category.objects
+            .annotate(book_count=Count('books'))
+            .values('id', 'name', 'book_count')
+        )
+        return Response({"results": list(stats) })

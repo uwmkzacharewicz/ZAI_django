@@ -1,4 +1,5 @@
 from rest_framework import viewsets, status, filters
+from django.db.models import Count
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.renderers import JSONRenderer
@@ -36,6 +37,7 @@ class BorrowViewSet(viewsets.ModelViewSet):
         self.perform_destroy(instance)
         return Response({"message": f"Wypożyczenie książki '{instance.book.title}' zostało usunięte."}, status=status.HTTP_200_OK)
 
+    # Zwraca statystyki wypożyczeń
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
 
@@ -53,6 +55,7 @@ class BorrowViewSet(viewsets.ModelViewSet):
         }
         return response
 
+    # Zwraca szczegóły wypożyczenia
     @action(detail=True, methods=['post'], url_path='return-book')
     def return_book(self, request, pk=None):
         borrow = self.get_object()
@@ -63,6 +66,7 @@ class BorrowViewSet(viewsets.ModelViewSet):
         borrow.save()
         return Response({'message': 'Książka została zwrócona.'}, status=status.HTTP_200_OK)
 
+    # Przedłuża termin zwrotu książki o 30 dni
     @action(detail=True, methods=['post'], url_path='extend-date')
     def extend_due_date(self, request, pk=None):
         borrow = self.get_object()
@@ -71,3 +75,21 @@ class BorrowViewSet(viewsets.ModelViewSet):
         borrow.due_date = borrow.due_date + timedelta(days=30)
         borrow.save()
         return Response({'message': 'Termin zwrotu książki został przedłużony o 30 dni.'}, status=status.HTTP_200_OK)
+
+    # Zwraca statystyki wypożyczeń w każdej z możliwych kategorii statusu
+    @action(detail=False, methods=['get'], url_path='status-stats')
+    def status_stats(self, request):
+        queryset = Borrow.objects.values('status').annotate(count=Count('id'))
+        return Response({
+            "results": list(queryset)
+        })
+
+    # Zwraca ile wypozyczył książek każdy z czytelników
+    @action(detail=False, methods=['get'], url_path='patron-stats')
+    def patron_stats(self, request):
+        queryset = (
+            Borrow.objects
+            .values('patron_id', 'patron__first_name', 'patron__last_name')
+            .annotate(total_borrows=Count('id'))
+        )
+        return Response({"results": list(queryset)})
