@@ -1,5 +1,6 @@
 from django.contrib import admin
 from import_export.admin import ExportMixin, ImportExportModelAdmin
+from django.utils import timezone
 from .models import Publisher, Category, Author, Book, BookDetails, Patron, Borrow
 from .resources import (
     PublisherResource,
@@ -49,9 +50,17 @@ class PatronAdmin(ImportExportModelAdmin):
     list_display = ("library_card_number", "first_name", "last_name", "email")
     search_fields = ("first_name", "last_name", "library_card_number")
 
+@admin.action(description="Oznacz jako zwrócone")
+def mark_as_returned(modeladmin, request, queryset):
+    queryset.update(status='returned', return_date=timezone.now().date())
+
+
 @admin.register(Borrow)
 class BorrowAdmin(ImportExportModelAdmin):
     resource_class = BorrowResource
+    actions = [mark_as_returned]
     list_display = ("patron", "book", "borrow_date", "due_date", "return_date", "status")
     search_fields = ("patron__first_name", "book__title")
     list_filter = ("status",)
+
+

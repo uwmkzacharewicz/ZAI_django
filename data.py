@@ -6,17 +6,35 @@ django.setup()
 
 from library.models import Publisher, Category, Author, Book, BookDetails, Patron, Borrow
 from datetime import date, timedelta
+from django.db import connection
+
+def reset_sqlite_sequence(table_name):
+    with connection.cursor() as cursor:
+        cursor.execute(f"DELETE FROM sqlite_sequence WHERE name='{table_name}'")
 
 def run():
     print("Czyszczenie danych z bazy...")
 
     Borrow.objects.all().delete()
+    reset_sqlite_sequence('library_borrow')
+
     BookDetails.objects.all().delete()
+    reset_sqlite_sequence('library_bookdetails')
+
     Book.objects.all().delete()
+    reset_sqlite_sequence('library_book')
+
     Author.objects.all().delete()
+    reset_sqlite_sequence('library_author')
+
     Category.objects.all().delete()
+    reset_sqlite_sequence('library_category')
+
     Publisher.objects.all().delete()
+    reset_sqlite_sequence('library_publisher')
+
     Patron.objects.all().delete()
+    reset_sqlite_sequence('library_patron')
 
     print("Dodawanie danych do bazy...")
     # wydawcy

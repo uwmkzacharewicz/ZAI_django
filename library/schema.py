@@ -23,6 +23,8 @@ class CategoryType(DjangoObjectType):
 
 
 class AuthorType(DjangoObjectType):
+    full_name = graphene.String()
+
     class Meta:
         model = Author
         filter_fields = {
@@ -32,8 +34,13 @@ class AuthorType(DjangoObjectType):
         }
         interfaces = (graphene.relay.Node,)
 
+    def resolve_full_name(self, info):
+        return f"{self.first_name} {self.last_name}"
+
 
 class PatronType(DjangoObjectType):
+    full_name = graphene.String()
+
     class Meta:
         model = Patron
         filter_fields = {
@@ -43,6 +50,9 @@ class PatronType(DjangoObjectType):
             'library_card_number': ['exact'],
         }
         interfaces = (graphene.relay.Node,)
+
+    def resolve_full_name(self, info):
+        return f"{self.first_name} {self.last_name}"
 
 
 class BookType(DjangoObjectType):
@@ -65,6 +75,7 @@ class BorrowType(DjangoObjectType):
         filter_fields = {
             'status': ['exact'],
             'patron__first_name': ['icontains'],
+            'patron__last_name': ['icontains'],
             'book__title': ['icontains'],
             'borrow_date': ['exact', 'gte', 'lte'],
         }

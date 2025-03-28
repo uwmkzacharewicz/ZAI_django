@@ -1,5 +1,8 @@
+from rest_framework.response import Response
+from rest_framework import status
 from rest_framework import viewsets, filters
 from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.renderers import JSONRenderer
 from django.http import HttpResponse
 from rest_framework.permissions import IsAuthenticated
 from .models import Publisher, Category, Author, Book, BookDetails, Patron, Borrow
@@ -15,6 +18,7 @@ from .serializers import (
 
 class PublisherViewSet(viewsets.ModelViewSet):
     queryset = Publisher.objects.all()
+    renderer_classes = [JSONRenderer]
     #permission_classes = [IsAuthenticated]
 
     def get_serializer_class(self):
@@ -24,6 +28,7 @@ class PublisherViewSet(viewsets.ModelViewSet):
 
 class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
+    renderer_classes = [JSONRenderer]
     #permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
     filterset_fields = ['name']
@@ -36,6 +41,7 @@ class CategoryViewSet(viewsets.ModelViewSet):
 
 class AuthorViewSet(viewsets.ModelViewSet):
     queryset = Author.objects.all()
+    renderer_classes = [JSONRenderer]
     #permission_classes = [IsAuthenticated]
     filter_backends = [filters.SearchFilter]
     search_fields = ['first_name', 'last_name']
@@ -45,11 +51,46 @@ class AuthorViewSet(viewsets.ModelViewSet):
             return AuthorCreateUpdateSerializer
         return AuthorSerializer
 
+    def create(self, request, *args, **kwargs):
+        response = super().create(request, *args, **kwargs)
+        return Response({
+            "message": "Autor został pomyślnie dodany.",
+            "data": response.data
+        }, status=status.HTTP_201_CREATED)
+
+    def update(self, request, *args, **kwargs):
+        response = super().update(request, *args, **kwargs)
+        return Response({
+            "message": "Autor został zaktualizowany.",
+            "data": response.data
+        }, status=status.HTTP_200_OK)
+
+    def partial_update(self, request, *args, **kwargs):
+        response = super().partial_update(request, *args, **kwargs)
+        return Response({
+            "message": "Wybrane pola autora zostały zaktualizowane.",
+            "data": response.data
+        }, status=status.HTTP_200_OK)
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        self.perform_destroy(instance)
+        return Response(
+            {"message": f"Autor '{instance.first_name} {instance.last_name}' został usunięty."},
+            status=status.HTTP_200_OK
+        )
+
+
 class BookViewSet(viewsets.ModelViewSet):
     queryset = Book.objects.all()
+    renderer_classes = [JSONRenderer]
     #permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
-    filterset_fields = ['publication_year', 'category']
+    filterset_fields = [
+        'publication_year',
+        'category',
+        'authors',
+        'publisher']
     ordering_fields = ['publication_year', 'title']
 
     def get_serializer_class(self):
@@ -57,8 +98,39 @@ class BookViewSet(viewsets.ModelViewSet):
             return BookCreateUpdateSerializer
         return BookSerializer
 
+    # Nowa książka
+    def create(self, request, *args, **kwargs):
+        response = super().create(request, *args, **kwargs)
+        return Response({
+            "message": "Książka została pomyślnie dodana.",
+            "data": response.data
+        }, status=status.HTTP_201_CREATED)
+
+    def update(self, request, *args, **kwargs):
+        response = super().update(request, *args, **kwargs)
+        return Response({
+            "message": "Książka została zaktualizowana.",
+            "data": response.data
+        }, status=status.HTTP_200_OK)
+
+    def partial_update(self, request, *args, **kwargs):
+        response = super().partial_update(request, *args, **kwargs)
+        return Response({
+            "message": "Wybrane pola książki zostały zaktualizowane.",
+            "data": response.data
+        }, status=status.HTTP_200_OK)
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        self.perform_destroy(instance)
+        return Response(
+            {"message": f"Książka '{instance.title}' została usunięta."},
+            status=status.HTTP_200_OK
+        )
+
 class BookDetailsViewSet(viewsets.ModelViewSet):
     queryset = BookDetails.objects.all()
+    renderer_classes = [JSONRenderer]
     #permission_classes = [IsAuthenticated]
 
     def get_serializer_class(self):
@@ -66,8 +138,39 @@ class BookDetailsViewSet(viewsets.ModelViewSet):
             return BookDetailsCreateUpdateSerializer
         return BookDetailsSerializer
 
+    def create(self, request, *args, **kwargs):
+        response = super().create(request, *args, **kwargs)
+        return Response({
+            "message": "Szczegóły książki zostały pomyślnie dodane.",
+            "data": response.data
+        }, status=status.HTTP_201_CREATED)
+
+    def update(self, request, *args, **kwargs):
+        response = super().update(request, *args, **kwargs)
+        return Response({
+            "message": "Szczegóły książki zostały zaktualizowane.",
+            "data": response.data
+        }, status=status.HTTP_200_OK)
+
+    def partial_update(self, request, *args, **kwargs):
+        response = super().partial_update(request, *args, **kwargs)
+        return Response({
+            "message": "Wybrane pola szczegółów książki zostały zaktualizowane.",
+            "data": response.data
+        }, status=status.HTTP_200_OK)
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        self.perform_destroy(instance)
+        return Response(
+            {"message": f"Szczegóły książki '{instance.book.title}' zostały usunięte."},
+            status=status.HTTP_200_OK
+        )
+
+
 class PatronViewSet(viewsets.ModelViewSet):
     queryset = Patron.objects.all()
+    renderer_classes = [JSONRenderer]
     #permission_classes = [IsAuthenticated]
 
     def get_serializer_class(self):
@@ -75,8 +178,38 @@ class PatronViewSet(viewsets.ModelViewSet):
             return PatronCreateUpdateSerializer
         return PatronSerializer
 
+    def create(self, request, *args, **kwargs):
+        response = super().create(request, *args, **kwargs)
+        return Response({
+            "message": "Patron został pomyślnie dodany.",
+            "data": response.data
+        }, status=status.HTTP_201_CREATED)
+
+    def update(self, request, *args, **kwargs):
+        response = super().update(request, *args, **kwargs)
+        return Response({
+            "message": "Patron został zaktualizowany.",
+            "data": response.data
+        }, status=status.HTTP_200_OK)
+
+    def partial_update(self, request, *args, **kwargs):
+        response = super().partial_update(request, *args, **kwargs)
+        return Response({
+            "message": "Wybrane pola patrona zostały zaktualizowane.",
+            "data": response.data
+        }, status=status.HTTP_200_OK)
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        self.perform_destroy(instance)
+        return Response(
+            {"message": f"Patron '{instance.first_name} {instance.last_name}' został usunięty."},
+            status=status.HTTP_200_OK
+        )
+
 class BorrowViewSet(viewsets.ModelViewSet):
     queryset = Borrow.objects.all()
+    renderer_classes = [JSONRenderer]
     #permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
     filterset_fields = ['status', 'patron']
@@ -86,6 +219,36 @@ class BorrowViewSet(viewsets.ModelViewSet):
         if self.request.method in ['POST', 'PUT', 'PATCH']:
             return BorrowCreateUpdateSerializer
         return BorrowSerializer
+
+    def create(self, request, *args, **kwargs):
+        response = super().create(request, *args, **kwargs)
+        return Response({
+            "message": "Wypożyczenie zostało pomyślnie dodane.",
+            "data": response.data
+        }, status=status.HTTP_201_CREATED)
+
+    def update(self, request, *args, **kwargs):
+        response = super().update(request, *args, **kwargs)
+        return Response({
+            "message": "Wypożyczenie zostało zaktualizowane.",
+            "data": response.data
+        }, status=status.HTTP_200_OK)
+
+    def partial_update(self, request, *args, **kwargs):
+        response = super().partial_update(request, *args, **kwargs)
+        return Response({
+            "message": "Wybrane pola wypożyczenia zostały zaktualizowane.",
+            "data": response.data
+        }, status=status.HTTP_200_OK)
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        self.perform_destroy(instance)
+        return Response(
+            {"message": f"Wypożyczenie książki '{instance.book.title}' zostało usunięte."},
+            status=status.HTTP_200_OK
+        )
+
 
 def home_view(request):
     html = """
