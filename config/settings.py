@@ -100,7 +100,12 @@ USE_TZ = True
 
 # pliki statyczne
 STATIC_URL = '/static/'
-STATIC_ROOT = BASE_DIR / 'static'
+#STATIC_ROOT = BASE_DIR / 'static'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+STATICFILES_DIRS = [
+    BASE_DIR / 'static',  # folder, w którym faktycznie leżą nasze pliki
+]
 
 # pliki multimedialne
 MEDIA_URL = '/media/'
@@ -118,8 +123,8 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.BasicAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': (
-        #'rest_framework.permissions.IsAuthenticated',
-        'rest_framework.permissions.AllowAny',
+        'rest_framework.permissions.IsAuthenticated',
+        #'rest_framework.permissions.AllowAny',
 
     ),
     'DEFAULT_FILTER_BACKENDS': (

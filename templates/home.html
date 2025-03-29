@@ -1,10 +1,28 @@
+{% load static %}
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
+    <title>Strona główna</title>
+    <link rel="stylesheet" href="{% static 'css/home.css' %}">
 </head>
 <body>
-$END$
+    <h1>Aplikacja Library API</h1>
+    <div class="link"><a href="/admin/">Panel administracyjny</a></div>
+    <div class="link"><a href="/api/">REST API</a></div>
+    <div class="link"><a href="/graphql/">GraphQL</a></div>
+    <div class="link"><a href="/swagger/">Swagger</a></div>
+    <div class="link"><a href="/redoc/">ReDoc</a></div>
+
+    <hr/>
+    <h2>Uzyskaj token JWT</h2>
+    <form id="login-form">
+        <input type="text" id="username" placeholder="Nazwa użytkownika" required /><br/>
+        <input type="password" id="password" placeholder="Hasło" required /><br/>
+        <button type="submit">Zaloguj się</button>
+    </form>
+    <div id="result"></div>
+
+    <!-- Ładujemy plik JS -->
+    <script src="{% static 'js/home.js' %}"></script>
 </body>
 </html>

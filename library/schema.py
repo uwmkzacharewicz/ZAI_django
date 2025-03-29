@@ -2,6 +2,7 @@ import graphene
 from graphene_django import DjangoObjectType
 from library.models import Category
 from django.db.models import Count
+from graphql import GraphQLError
 from graphene_django.filter import DjangoFilterConnectionField
 from library.models import Book, Author, Publisher, Category, Borrow, Patron
 
@@ -203,7 +204,6 @@ class Query(graphene.ObjectType):
     category_stats = graphene.List(CategoryStatsType)
     # pobranie statystyk książek
     book_stats = graphene.List(BookStatsType)
-
 
     def resolve_category_stats(self, info):
         # słownik z danymi

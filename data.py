@@ -115,7 +115,6 @@ def run():
             book=b1,
             isbn="9780132350884",
             pages=464,
-            cover_image_url="https://example.com/clean.jpg",
             cover_image=File(f, name="clean_code.jpg")
         )
 
@@ -125,7 +124,6 @@ def run():
             book=b2,
             isbn="9780135957059",
             pages=352,
-            cover_image_url="https://example.com/pragmatic.jpg",
             cover_image=File(f, name="pragmatic_programmer.jpg")
         )
 
@@ -134,7 +132,6 @@ def run():
         book=b3,
         isbn="9780262033848",
         pages=1312,
-        cover_image_url="https://example.com/introduction_to_algorithms.jpg",
         cover_image=''
     )
 
@@ -144,21 +141,19 @@ def run():
                 book=b4,
                 isbn="9780262035613",
                 pages=800,
-                cover_image_url="https://example.com/deep_learning.jpg",
                 cover_image=File(f, name="deep_learning.jpg")
             )
 
     BookDetails.objects.create(
         book=b5,
         isbn="9781491904244",
-        pages=278,
-        cover_image_url="https://example.com/you_dont_know_js.jpg"
+        pages=278
     )
-    BookDetails.objects.create(book=b6, isbn="9788324620845", pages=700, cover_image_url="https://example.com/symfonia_cpp.jpg")
-    BookDetails.objects.create(book=b7, isbn="9788328339224", pages=520, cover_image_url="https://example.com/algorytmy_i_struktury_danych.jpg")
-    BookDetails.objects.create(book=b8, isbn="9788328339225", pages=480, cover_image_url="https://example.com/sztuczna_inteligencja.jpg")
-    BookDetails.objects.create(book=b9, isbn="9788328342140", pages=320, cover_image_url="https://example.com/sql_kurs_poczatkujacych.jpg")
-    BookDetails.objects.create(book=b10, isbn="9788328339218", pages=360, cover_image_url="https://example.com/scrum_teoria_praktyka.jpg")
+    BookDetails.objects.create(book=b6, isbn="9788324620845", pages=700)
+    BookDetails.objects.create(book=b7, isbn="9788328339224", pages=520)
+    BookDetails.objects.create(book=b8, isbn="9788328339225", pages=480)
+    BookDetails.objects.create(book=b9, isbn="9788328342140", pages=320)
+    BookDetails.objects.create(book=b10, isbn="9788328339218", pages=360)
 
     # Tworzymy czytelników
     pat1 = Patron.objects.create(library_card_number="LC1001", first_name="Jan", last_name="Kowalski", email="jan.kowalski@example.com")

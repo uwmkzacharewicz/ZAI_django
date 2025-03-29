@@ -57,7 +57,6 @@ class BookDetails(models.Model):
     book = models.OneToOneField(Book, on_delete=models.CASCADE, related_name='detail')
     isbn = models.CharField(max_length=13, blank=False, null=False, unique=True)
     pages = models.IntegerField(blank=True, null=True)
-    cover_image_url = models.URLField(max_length=255, blank=True, null=True)
     cover_image = models.ImageField(upload_to='covers/', blank=True, null=True)
 
     def __str__(self):
