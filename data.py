@@ -1,5 +1,7 @@
 import django
 import os
+from django.conf import settings
+from pathlib import Path
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
 django.setup()
@@ -7,6 +9,7 @@ django.setup()
 from library.models import Publisher, Category, Author, Book, BookDetails, Patron, Borrow
 from datetime import date, timedelta
 from django.db import connection
+from django.core.files import File
 
 def reset_sqlite_sequence(table_name):
     with connection.cursor() as cursor:
@@ -105,11 +108,52 @@ def run():
     b10.authors.add(a10)
 
     # Tworzymy szczegóły książki
-    BookDetails.objects.create(book=b1, isbn="9780132350884", pages=464, cover_image_url="https://example.com/clean_code.jpg")
-    BookDetails.objects.create(book=b2, isbn="9780201616224", pages=352, cover_image_url="https://example.com/pragmatic_programmer.jpg")
-    BookDetails.objects.create(book=b3, isbn="9780262033848", pages=1312, cover_image_url="https://example.com/introduction_to_algorithms.jpg")
-    BookDetails.objects.create(book=b4, isbn="9780262035613", pages=800, cover_image_url="https://example.com/deep_learning.jpg")
-    BookDetails.objects.create(book=b5, isbn="9781491904244", pages=278, cover_image_url="https://example.com/you_dont_know_js.jpg")
+
+    cover_path = Path(settings.MEDIA_ROOT, "uploads", "clean.jpg")
+    with open(cover_path, "rb") as f:
+        BookDetails.objects.create(
+            book=b1,
+            isbn="9780132350884",
+            pages=464,
+            cover_image_url="https://example.com/clean.jpg",
+            cover_image=File(f, name="clean_code.jpg")
+        )
+
+    cover_path = Path(settings.MEDIA_ROOT, "uploads", "pragmatic.jpg")
+    with open(cover_path, "rb") as f:
+        BookDetails.objects.create(
+            book=b2,
+            isbn="9780135957059",
+            pages=352,
+            cover_image_url="https://example.com/pragmatic.jpg",
+            cover_image=File(f, name="pragmatic_programmer.jpg")
+        )
+
+
+    BookDetails.objects.create(
+        book=b3,
+        isbn="9780262033848",
+        pages=1312,
+        cover_image_url="https://example.com/introduction_to_algorithms.jpg",
+        cover_image=''
+    )
+
+    cover_path = Path(settings.MEDIA_ROOT, "uploads", "deep.jpg")
+    with open(cover_path, "rb") as f:
+        BookDetails.objects.create(
+                book=b4,
+                isbn="9780262035613",
+                pages=800,
+                cover_image_url="https://example.com/deep_learning.jpg",
+                cover_image=File(f, name="deep_learning.jpg")
+            )
+
+    BookDetails.objects.create(
+        book=b5,
+        isbn="9781491904244",
+        pages=278,
+        cover_image_url="https://example.com/you_dont_know_js.jpg"
+    )
     BookDetails.objects.create(book=b6, isbn="9788324620845", pages=700, cover_image_url="https://example.com/symfonia_cpp.jpg")
     BookDetails.objects.create(book=b7, isbn="9788328339224", pages=520, cover_image_url="https://example.com/algorytmy_i_struktury_danych.jpg")
     BookDetails.objects.create(book=b8, isbn="9788328339225", pages=480, cover_image_url="https://example.com/sztuczna_inteligencja.jpg")

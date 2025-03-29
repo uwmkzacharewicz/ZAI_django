@@ -35,7 +35,7 @@ class BookDetailsSerializer(serializers.ModelSerializer):
     book_id = serializers.PrimaryKeyRelatedField(queryset=Book.objects.all(), source='book', write_only=True)
     class Meta:
         model = BookDetails
-        fields = ['id', 'book', 'book_id', 'isbn', 'pages', 'cover_image_url']
+        fields = ['id', 'book', 'book_id', 'isbn', 'pages', 'cover_image_url', 'cover_image']
 
 class PatronSerializer(serializers.ModelSerializer):
     full_name = serializers.ReadOnlyField()

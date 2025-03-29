@@ -1,5 +1,7 @@
 import graphene
 from graphene_django import DjangoObjectType
+from library.models import Category
+from django.db.models import Count
 from graphene_django.filter import DjangoFilterConnectionField
 from library.models import Book, Author, Publisher, Category, Borrow, Patron
 
@@ -67,6 +69,7 @@ class BookType(DjangoObjectType):
             'authors__last_name': ['icontains'],
         }
         interfaces = (graphene.relay.Node,)
+
 
 
 class BorrowType(DjangoObjectType):
@@ -163,13 +166,20 @@ class DeleteBook(graphene.Mutation):
 class BookCount(graphene.ObjectType):
     count = graphene.Int()
 
-    def resolve_count(self, info):
-        return Book.objects.count()
+    def resolve_book_count(self, info):
+        return BookCount()
 
 class CategoryStatsType(graphene.ObjectType):
     id = graphene.ID()
     name = graphene.String()
     book_count = graphene.Int()
+
+class BookStatsType(graphene.ObjectType):
+    id = graphene.ID()
+    title = graphene.String()
+    publication_year = graphene.Int()
+    borrow_count = graphene.Int()
+
 
 class Query(graphene.ObjectType):
     all_books = DjangoFilterConnectionField(BookType)
@@ -179,7 +189,7 @@ class Query(graphene.ObjectType):
     all_patrons = DjangoFilterConnectionField(PatronType)
     all_borrows = DjangoFilterConnectionField(BorrowType)
 
-    # Możliwość pobrania pojedynczego obiektu po Node ID
+    # pobranie pojedynczego obiektu po Node ID
     book = graphene.relay.Node.Field(BookType)
     author = graphene.relay.Node.Field(AuthorType)
     publisher = graphene.relay.Node.Field(PublisherType)
@@ -191,14 +201,11 @@ class Query(graphene.ObjectType):
     book_count = graphene.Field(BookCount)
     # pobranie statystyk kategorii
     category_stats = graphene.List(CategoryStatsType)
+    # pobranie statystyk książek
+    book_stats = graphene.List(BookStatsType)
 
-    def resolve_book_count(self, info):
-        return BookCount()
 
     def resolve_category_stats(self, info):
-        from library.models import Category
-        from django.db.models import Count
-
         # słownik z danymi
         qs = (
             Category.objects
@@ -218,6 +225,27 @@ class Query(graphene.ObjectType):
             )
         return stats_list
 
+
+    def resolve_book_stats(self, info):
+        # słownik z danymi
+        qs = (
+            Book.objects
+            .annotate(borrow_count=Count('borrows'))
+            .values('id', 'title', 'publication_year', 'borrow_count')
+        )
+
+        # zamieniamy słownik na listę obiektów
+        stats_list = []
+        for row in qs:
+            stats_list.append(
+                BookStatsType(
+                    id=row['id'],
+                    title=row['title'],
+                    publication_year=row['publication_year'],
+                    borrow_count=row['borrow_count']
+                )
+            )
+        return stats_list
 
 
 class Mutation(graphene.ObjectType):

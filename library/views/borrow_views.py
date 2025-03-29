@@ -93,3 +93,17 @@ class BorrowViewSet(viewsets.ModelViewSet):
             .annotate(total_borrows=Count('id'))
         )
         return Response({"results": list(queryset)})
+
+    @action(detail=False, methods=['get'], url_path='stats')
+    def borrow_stats(self, request):
+        queryset = self.get_queryset()
+
+        stats = {
+            "total_borrows": queryset.count(),
+            "active": queryset.filter(status='active').count(),
+            "overdue": queryset.filter(status='overdue').count(),
+            "returned": queryset.filter(status='returned').count(),
+            "lost": queryset.filter(status='lost').count(),
+        }
+
+        return Response({"stats": stats}, status=status.HTTP_200_OK)
