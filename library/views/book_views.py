@@ -54,7 +54,7 @@ class BookViewSet(viewsets.ModelViewSet):
             "details": {
                 "isbn": details.isbn if details else None,
                 "pages": details.pages if details else None,
-                "cover_image_url": details.cover_image_url if details else None,
+                "cover_image": request.build_absolute_uri(details.cover_image.url) if details and details.cover_image else None
             }
         })
 

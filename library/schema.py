@@ -1,5 +1,6 @@
 import graphene
 from graphene_django import DjangoObjectType
+from django.db.models import Count, Avg, Max, Min, Sum
 from library.models import Category
 from django.db.models import Count
 from graphql import GraphQLError
@@ -164,11 +165,15 @@ class DeleteBook(graphene.Mutation):
         return DeleteBook(success=True)
 
 # agregacje
+class BookPagesStats(graphene.ObjectType):
+    total_pages = graphene.Int()
+    average_pages = graphene.Float()
+    max_pages = graphene.Int()
+    min_pages = graphene.Int()
+
+
 class BookCount(graphene.ObjectType):
     count = graphene.Int()
-
-    def resolve_book_count(self, info):
-        return BookCount()
 
 class CategoryStatsType(graphene.ObjectType):
     id = graphene.ID()
@@ -180,6 +185,15 @@ class BookStatsType(graphene.ObjectType):
     title = graphene.String()
     publication_year = graphene.Int()
     borrow_count = graphene.Int()
+
+class PublicationYearStats(graphene.ObjectType):
+    min_year = graphene.Int()
+    max_year = graphene.Int()
+
+class BorrowStatusStat(graphene.ObjectType):
+    status = graphene.String()
+    count = graphene.Int()
+
 
 
 class Query(graphene.ObjectType):
@@ -204,6 +218,17 @@ class Query(graphene.ObjectType):
     category_stats = graphene.List(CategoryStatsType)
     # pobranie statystyk książek
     book_stats = graphene.List(BookStatsType)
+    # pobranie statystyk roku wydania
+    publication_year_stats = graphene.Field(PublicationYearStats)
+    # pobranie statystyk wypożyczeń
+    borrow_status_stats = graphene.List(BorrowStatusStat)
+
+    def resolve_book_count(self, info):
+        queryset = Book.objects.all()
+        result = queryset.aggregate(count=Count("id"))
+        total = result["count"]
+        #total = Book.objects.aggregate(count=Count("id"))["count"]
+        return BookCount(count=total)
 
     def resolve_category_stats(self, info):
         # słownik z danymi
@@ -246,6 +271,46 @@ class Query(graphene.ObjectType):
                 )
             )
         return stats_list
+
+    book_pages_stats = graphene.Field(BookPagesStats)
+
+    def resolve_book_pages_stats(self, info):
+        from library.models import BookDetails
+        stats = BookDetails.objects.aggregate(
+            total_pages=Sum("pages"),
+            average_pages=Avg("pages"),
+            max_pages=Max("pages"),
+            min_pages=Min("pages")
+        )
+        return BookPagesStats(
+            total_pages=stats["total_pages"],
+            average_pages=stats["average_pages"],
+            max_pages=stats["max_pages"],
+            min_pages=stats["min_pages"]
+        )
+
+    def resolve_publication_year_stats(self, info):
+        stats = Book.objects.aggregate(
+            min_year=Min("publication_year"),
+            max_year=Max("publication_year")
+        )
+        return PublicationYearStats(
+            min_year=stats["min_year"],
+            max_year=stats["max_year"]
+        )
+
+    def resolve_borrow_status_stats(self, info):
+        stats = (
+            Borrow.objects
+            .values("status")  # grupujemy po statusie
+            .annotate(count=Count("id"))  # zliczamy
+            .order_by("status")
+        )
+
+        return [
+            BorrowStatusStat(status=row["status"], count=row["count"])
+            for row in stats
+        ]
 
 
 class Mutation(graphene.ObjectType):

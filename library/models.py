@@ -16,8 +16,7 @@ class Publisher(models.Model):
 class Category(models.Model):
     name = models.CharField(max_length=100, blank=False, null=False)
 
-    # Klasa Meta dla ustawień modelu, verbose_name_plural -> nazwa w liczbie mnogiej
-    # ordering -> domyślne sortowanie
+    # Klasa Meta do ustawień modelu, verbose_name_plural -> nazwa w liczbie mnogiej
     class Meta:
         verbose_name_plural = "Categories"
         ordering = ['name']
